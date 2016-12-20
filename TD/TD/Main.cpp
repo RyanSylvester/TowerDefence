@@ -54,21 +54,15 @@ void InitAllegro(int W, int H)
 		exit(0);
 	}
 }
-
-
-
 void main()
 {
-	//initialize allegro
-	int sw = 800;
-	int sh = 600;
+	//Initialization
+	int sw = 1000;
+	int sh = 800;
 	InitAllegro(sw, sh);
-
-	//create and initialize all objects 
-
-
 	al_hide_mouse_cursor(display);
+
+	//Game begins
 	game.Run();
-	
 	game.End(display);
 }

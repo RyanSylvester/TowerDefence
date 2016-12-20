@@ -4,74 +4,114 @@
 
 Game::Game()
 {
+	bg = al_load_bitmap("background.bmp");
+	numE = score = lives = 0;
+	quit = false;
 }
 
 
 
 void Game::Run()
 {
-	//int numE;
-
+	numE = 50;
+	lives = 5;
+	ALLEGRO_KEYBOARD_STATE key_state;
 	ALLEGRO_MOUSE_STATE mouse_state;
 
+	Item background;
+	background.bmp = al_load_bitmap("background.bmp");
 
 	Item cross;
 	cross.bmp = al_load_bitmap("Crosshairs.bmp");
 	al_convert_mask_to_alpha(cross.bmp, al_map_rgb(255, 255, 255));
-	cross.x = 100;
-	cross.y = 100;
+	cross.size = 20;
 	
-
-	Item targets[10];
-	for (int i = 0; i < 10; i++)
+	Item targets[100];
+	for (int i = 0; i < numE; i++)
 	{
 		targets[i].bmp = al_load_bitmap("Enemy.bmp");
-		targets[i].x = rand() % 760;
-		targets[i].y = rand() % 560;
+		targets[i].x = (i * -100);
+		targets[i].y = rand() % 20 + 130;
+		targets[i].visible = true;
+		targets[i].phase = 1;
+		targets[i].speed = 2;
+		targets[i].size = 50;
 	}
-
-
-
-	ALLEGRO_KEYBOARD_STATE key_state; //ALLEGRO_KEYBOARD_STATE is a "user define type" in Allegro
-
-
 									  
-	bool quit = false;
 	while (quit == false)
 	{
-
 		al_get_keyboard_state(&key_state);
 
-		//end program
-		if (al_key_down(&key_state, ALLEGRO_KEY_ESCAPE)) //al_key_down checks the status of a key in the key_state structure
+		if ((al_key_down(&key_state, ALLEGRO_KEY_ESCAPE)) || (lives <= 0))
 		{
 			quit = true;
 		}
 
 		al_get_mouse_state(&mouse_state);
-		cross.x = mouse_state.x-20;
-		cross.y = mouse_state.y-20;
+		cross.x = mouse_state.x - cross.size;
+		cross.y = mouse_state.y - cross.size;
 
-
-
-		al_clear_to_color(al_map_rgb(255, 255, 255));
-		
-		for (int i = 0; i < 10; i++)
+		if (mouse_state.buttons & 1) 
 		{
-			render.Draw(targets[i].bmp, targets[i].x, targets[i].y);
+			for (int i = 0; i < numE; i++)
+			{
+				if ((mouse_state.x >= targets[i].x && mouse_state.x <= targets[i].x + targets[i].size && mouse_state.y >= targets[i].y && mouse_state.y <= targets[i].y + targets[i].size) && (targets[i].visible == true))
+				{
+					targets[i].x = -1000;
+					targets[i].y = -1000;
+					targets[i].visible = false;
+					score++;
+				}
+			}
 		}
+
+		for (int i = 0; i < numE; i++) // Enemies follow path
+		{
+			if (targets[i].visible == true)
+			{
+				if ((targets[i].x >= 820 - (targets[i].size / 2)) && (targets[i].phase == 1))
+					targets[i].phase = 2;
+				if ((targets[i].y >= 350) && (targets[i].phase == 2))
+					targets[i].phase = 3;
+				if ((targets[i].x <= 190) && (targets[i].phase == 3))
+					targets[i].phase = 4;
+				if ((targets[i].y >= 600) && (targets[i].phase == 4))
+					targets[i].phase = 5;
+				if ((targets[i].x >= 1000) && (targets[i].phase == 5))
+				{
+					targets[i].phase = 6;
+					lives--;
+				}
+
+				targets[i].sx = 0;
+				targets[i].sy = 0;
+
+				if (targets[i].phase == 1)
+					targets[i].sx = targets[i].speed;
+				else if (targets[i].phase == 2)
+					targets[i].sy = targets[i].speed;
+				else if (targets[i].phase == 3)
+					targets[i].sx = targets[i].speed * -1;
+				else if (targets[i].phase == 4)
+					targets[i].sy = targets[i].speed;
+				else if (targets[i].phase == 5)
+					targets[i].sx = targets[i].speed;
+
+				targets[i].Move();
+			}
+		}
+
+		
+		// Drawing
+		render.Draw(background.bmp, background.x, background.y);
+		for (int i = 0; i < numE; i++)
+			render.Draw(targets[i].bmp, targets[i].x, targets[i].y);
 		render.Draw(cross.bmp, cross.x, cross.y);
 
-
-
-
-
+				
 		al_flip_display();
 		al_rest(0.01); 
 	}
-
-
-
 }
 
 void Game::End(ALLEGRO_DISPLAY* d)

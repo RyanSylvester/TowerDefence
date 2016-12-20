@@ -4,16 +4,10 @@
 
 Item::Item()
 {
-	x = y = sx = sy = 0;
+	x = y = size = sx = sy = speed = phase = 0;
+	visible = true;
 }
 
-
-
-
-void Item::Draw()
-{
-	al_draw_bitmap(bmp, x, y, 0);
-}
 
 void Item::Move()
 {
