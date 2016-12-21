@@ -12,6 +12,8 @@ public:
 	int sy;
 	int speed;
 
+	int timer;
+
 	int phase;
 	bool visible;
 	Item();

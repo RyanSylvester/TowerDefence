@@ -8,7 +8,7 @@ Game::Game()
 	score =  0;
 	numE = ECount = 10;
 	wave = 1;
-	lives = 2000;
+	lives = 50;
 	ammo = 5;
 	quit =DisplayReload = false;
 }
@@ -55,7 +55,13 @@ void Game::Run()
 	reload.size = 100;
 	reload.x = rand() % 900;
 	reload.y = rand() % 700;
-									  
+
+	Item pew;
+	pew.bmp = al_load_bitmap("pew.bmp");
+	al_convert_mask_to_alpha(pew.bmp, al_map_rgb(255, 255, 255));
+	pew.timer = 0;
+
+										  
 	while (quit == false)
 	{
 		al_get_keyboard_state(&key_state);
@@ -78,8 +84,12 @@ void Game::Run()
 
 		}
 
+
 		if ((trigger == true) && (mouse_state.buttons == 1) )
 		{
+			pew.timer = 25;
+			pew.x = rand() % 700 + 100;
+			pew.y = rand() % 500 + 100;
 			for (int i = 0; i < numE; i++)
 			{
 				if ((ammo >= 1) && (trigger == true) && (mouse_state.x >= targets[i].x && mouse_state.x <= targets[i].x + targets[i].size && mouse_state.y >= targets[i].y && mouse_state.y <= targets[i].y + targets[i].size) && (targets[i].visible == true))
@@ -89,6 +99,7 @@ void Game::Run()
 					targets[i].visible = false;
 					score++;
 					ECount--;
+					
 				}
 			}
 
@@ -193,6 +204,13 @@ void Game::Run()
 			render.Draw(cross.bmp, cross.x, cross.y);
 		else
 			render.Draw(CrossReload.bmp, CrossReload.x, CrossReload.y);
+
+		if (pew.timer != 0)
+		{
+			
+			render.Draw(pew.bmp, pew.x, pew.y);
+			pew.timer--;
+		}
 
 		al_draw_textf(font, al_map_rgb(255, 255, 255), 10, 0, 0, "Score: %d", score);
 		al_draw_textf(font, al_map_rgb(255, 255, 255), 10, 20, 0, "Wave: %d", wave);
