@@ -17,6 +17,8 @@ void Game::Run()
 	lives = 5;
 	ALLEGRO_KEYBOARD_STATE key_state;
 	ALLEGRO_MOUSE_STATE mouse_state;
+	ALLEGRO_FONT *font;
+	font = al_load_ttf_font("Ubuntu.ttf", 20, 0);
 
 	Item background;
 	background.bmp = al_load_bitmap("background.bmp");
@@ -34,7 +36,7 @@ void Game::Run()
 		targets[i].y = rand() % 20 + 130;
 		targets[i].visible = true;
 		targets[i].phase = 1;
-		targets[i].speed = 2;
+		targets[i].speed = 4;
 		targets[i].size = 50;
 	}
 									  
@@ -106,7 +108,9 @@ void Game::Run()
 		render.Draw(background.bmp, background.x, background.y);
 		for (int i = 0; i < numE; i++)
 			render.Draw(targets[i].bmp, targets[i].x, targets[i].y);
+		al_draw_textf(font, al_map_rgb(255, 255, 255), 75, 0, 0, "%d", score);
 		render.Draw(cross.bmp, cross.x, cross.y);
+		
 
 				
 		al_flip_display();

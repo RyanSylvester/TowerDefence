@@ -2,6 +2,7 @@
 
 
 ALLEGRO_DISPLAY* display = NULL;
+
 Game game;
 
 //initialzie Allegro components
@@ -53,6 +54,9 @@ void InitAllegro(int W, int H)
 		printf("failed to initialize primitives!\n");
 		exit(0);
 	}
+	//initialize font
+	al_init_font_addon();
+	al_init_ttf_addon();
 }
 void main()
 {
