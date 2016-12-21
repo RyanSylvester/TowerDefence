@@ -5,40 +5,56 @@
 Game::Game()
 {
 	bg = al_load_bitmap("background.bmp");
-	numE = score = lives = 0;
-	quit = false;
+	score =  0;
+	numE = ECount = 10;
+	wave = 1;
+	lives = 2000;
+	ammo = 5;
+	quit =DisplayReload = false;
 }
 
 
 
 void Game::Run()
 {
-	numE = 50;
-	lives = 5;
+
+
 	ALLEGRO_KEYBOARD_STATE key_state;
 	ALLEGRO_MOUSE_STATE mouse_state;
 	ALLEGRO_FONT *font;
-	font = al_load_ttf_font("Ubuntu.ttf", 20, 0);
+
+	font = al_load_ttf_font("Roboto-Regular.ttf", 20, 0);
 
 	Item background;
 	background.bmp = al_load_bitmap("background.bmp");
 
 	Item cross;
-	cross.bmp = al_load_bitmap("Crosshairs.bmp");
+	cross.bmp = al_load_bitmap("Sniper.bmp");
 	al_convert_mask_to_alpha(cross.bmp, al_map_rgb(255, 255, 255));
-	cross.size = 20;
+	cross.size = 3000;
 	
+	Item CrossReload;
+	CrossReload.bmp = al_load_bitmap("Empty.bmp");
+	al_convert_mask_to_alpha(CrossReload.bmp, al_map_rgb(255, 255, 255));
+	CrossReload.size = 30;
+
 	Item targets[100];
 	for (int i = 0; i < numE; i++)
 	{
 		targets[i].bmp = al_load_bitmap("Enemy.bmp");
-		targets[i].x = (i * -100);
+		targets[i].x = (i * -100) - 100;
 		targets[i].y = rand() % 20 + 130;
 		targets[i].visible = true;
 		targets[i].phase = 1;
-		targets[i].speed = 4;
+		targets[i].speed = rand() % 2 + wave;
 		targets[i].size = 50;
 	}
+
+	Item reload;
+	reload.bmp = al_load_bitmap("Reload.bmp");
+	reload.size = 100;
+	reload.x = rand() % 900;
+	reload.y = rand() % 700;
 									  
 	while (quit == false)
 	{
@@ -50,27 +66,47 @@ void Game::Run()
 		}
 
 		al_get_mouse_state(&mouse_state);
-		cross.x = mouse_state.x - cross.size;
-		cross.y = mouse_state.y - cross.size;
+		cross.x = mouse_state.x - cross.size/2;
+		cross.y = mouse_state.y - cross.size/2;
 
-		if (mouse_state.buttons & 1) 
+		CrossReload.x = mouse_state.x - CrossReload.size / 2;
+		CrossReload.y = mouse_state.y - CrossReload.size / 2;
+
+		if (mouse_state.buttons != 1)
+		{
+			trigger = true;
+
+		}
+
+		if ((trigger == true) && (mouse_state.buttons == 1) )
 		{
 			for (int i = 0; i < numE; i++)
 			{
-				if ((mouse_state.x >= targets[i].x && mouse_state.x <= targets[i].x + targets[i].size && mouse_state.y >= targets[i].y && mouse_state.y <= targets[i].y + targets[i].size) && (targets[i].visible == true))
+				if ((ammo >= 1) && (trigger == true) && (mouse_state.x >= targets[i].x && mouse_state.x <= targets[i].x + targets[i].size && mouse_state.y >= targets[i].y && mouse_state.y <= targets[i].y + targets[i].size) && (targets[i].visible == true))
 				{
 					targets[i].x = -1000;
 					targets[i].y = -1000;
 					targets[i].visible = false;
 					score++;
+					ECount--;
 				}
 			}
+
+			ammo--;
+
+			if (reload.visible && mouse_state.x >= reload.x && mouse_state.x <= reload.x + reload.size && mouse_state.y >= reload.y && mouse_state.y <= reload.y + reload.size)
+			{
+				ammo = 5;
+			}
+			trigger = false;
 		}
 
 		for (int i = 0; i < numE; i++) // Enemies follow path
 		{
 			if (targets[i].visible == true)
 			{
+
+
 				if ((targets[i].x >= 820 - (targets[i].size / 2)) && (targets[i].phase == 1))
 					targets[i].phase = 2;
 				if ((targets[i].y >= 350) && (targets[i].phase == 2))
@@ -83,6 +119,7 @@ void Game::Run()
 				{
 					targets[i].phase = 6;
 					lives--;
+					ECount--;
 				}
 
 				targets[i].sx = 0;
@@ -103,15 +140,69 @@ void Game::Run()
 			}
 		}
 
-		
-		// Drawing
+
+		// WAVES //
+
+		if (ECount <= 0)
+		{
+			wave++;
+
+			if (numE <= 90)
+			{
+				numE = wave * 10;
+
+				for (int i = 0; i < numE; i++)
+				{
+					targets[i].bmp = al_load_bitmap("Enemy.bmp");
+					targets[i].x = (i * -100) - 100;
+					targets[i].y = rand() % 20 + 130;
+					targets[i].visible = true;
+					targets[i].phase = 1;
+					targets[i].size = 50;
+					targets[i].speed = rand() % 2 + wave;
+				}
+			}
+			ECount = numE;
+		}
+
+		if (ammo <= 0 && DisplayReload == false)
+		{
+			reload.visible = true;
+			DisplayReload = true;
+			reload.x = rand() % 900;
+			reload.y = rand() % 700;
+		}
+		else if (ammo >= 1)
+		{
+			reload.visible = false;
+			DisplayReload = false;
+		}
+		else
+			ammo = 0;
+
+		// Drawing //////////////////////////////////////////////////////////
 		render.Draw(background.bmp, background.x, background.y);
+		
 		for (int i = 0; i < numE; i++)
 			render.Draw(targets[i].bmp, targets[i].x, targets[i].y);
-		al_draw_textf(font, al_map_rgb(255, 255, 255), 75, 0, 0, "%d", score);
-		render.Draw(cross.bmp, cross.x, cross.y);
-		
 
+		if (reload.visible)
+			render.Draw(reload.bmp, reload.x, reload.y);
+
+		if (ammo >= 1)
+			render.Draw(cross.bmp, cross.x, cross.y);
+		else
+			render.Draw(CrossReload.bmp, CrossReload.x, CrossReload.y);
+
+		al_draw_textf(font, al_map_rgb(255, 255, 255), 10, 0, 0, "Score: %d", score);
+		al_draw_textf(font, al_map_rgb(255, 255, 255), 10, 20, 0, "Wave: %d", wave);
+
+		al_draw_textf(font, al_map_rgb(255, 255, 255), 848, 0, 0, "             Lives: %d", lives);
+		al_draw_textf(font, al_map_rgb(255, 255, 255), 840, 20, 0, "Enemies Left: %d", ECount);
+
+		al_draw_textf(font, al_map_rgb(255, 255, 255), mouse_state.x + 10, mouse_state.y + 10, 0, "%d", ammo);
+
+		//////////////////////////////////////////////
 				
 		al_flip_display();
 		al_rest(0.01); 

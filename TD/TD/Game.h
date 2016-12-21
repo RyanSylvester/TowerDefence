@@ -5,10 +5,8 @@ public:
 	Game();
 	Render render;
 	ALLEGRO_BITMAP* bg;
-	bool quit;
-	int numE;
-	int score;
-	int lives;
+	bool quit, trigger, DisplayReload;
+	int numE, ECount, score, lives, ammo, wave;
 	void Run();
 	void End(ALLEGRO_DISPLAY* d);
 	
