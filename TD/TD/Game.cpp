@@ -71,6 +71,7 @@ void Game::Run()
 			quit = true;
 		}
 
+
 		al_get_mouse_state(&mouse_state);
 		cross.x = mouse_state.x - cross.size/2;
 		cross.y = mouse_state.y - cross.size/2;
@@ -87,19 +88,24 @@ void Game::Run()
 
 		if ((trigger == true) && (mouse_state.buttons == 1) )
 		{
-			pew.timer = 25;
-			pew.x = rand() % 700 + 100;
-			pew.y = rand() % 500 + 100;
-			for (int i = 0; i < numE; i++)
+			if (ammo >= 1)
 			{
-				if ((ammo >= 1) && (trigger == true) && (mouse_state.x >= targets[i].x && mouse_state.x <= targets[i].x + targets[i].size && mouse_state.y >= targets[i].y && mouse_state.y <= targets[i].y + targets[i].size) && (targets[i].visible == true))
+				pew.timer = 25;
+				pew.x = rand() % 700 + 100;
+				pew.y = rand() % 500 + 100;
+				for (int i = 0; i < numE; i++)
 				{
-					targets[i].x = -1000;
-					targets[i].y = -1000;
-					targets[i].visible = false;
-					score++;
-					ECount--;
-					
+					if ((trigger == true) && (mouse_state.x >= targets[i].x && mouse_state.x <= targets[i].x + targets[i].size && mouse_state.y >= targets[i].y && mouse_state.y <= targets[i].y + targets[i].size) && (targets[i].visible == true))
+					{
+						targets[i].sx = 0;
+						targets[i].sy = 0;
+						targets[i].visible = false;
+						score++;
+						ECount--;
+						targets[i].bmp = al_load_bitmap("RIP.bmp");
+						al_convert_mask_to_alpha(targets[i].bmp, al_map_rgb(255, 255, 255));
+
+					}
 				}
 			}
 
@@ -211,6 +217,8 @@ void Game::Run()
 			render.Draw(pew.bmp, pew.x, pew.y);
 			pew.timer--;
 		}
+
+			
 
 		al_draw_textf(font, al_map_rgb(255, 255, 255), 10, 0, 0, "Score: %d", score);
 		al_draw_textf(font, al_map_rgb(255, 255, 255), 10, 20, 0, "Wave: %d", wave);
