@@ -8,7 +8,7 @@ Game::Game()
 	score =  0;
 	numE = ECount = 10;
 	wave = 1;
-	lives = 50;
+	lives = 1;
 	ammo = 5;
 	quit =DisplayReload = false;
 }
@@ -17,13 +17,17 @@ Game::Game()
 
 void Game::Run()
 {
-
-
 	ALLEGRO_KEYBOARD_STATE key_state;
 	ALLEGRO_MOUSE_STATE mouse_state;
-	ALLEGRO_FONT *font;
 
-	font = al_load_ttf_font("Roboto-Regular.ttf", 20, 0);
+	ALLEGRO_FONT *font;
+	ALLEGRO_FONT* title;
+	ALLEGRO_FONT* subtitle;
+
+	font = al_load_ttf_font("BalooThambi-Regular.ttf", 20, 0);
+	title = al_load_ttf_font("BalooThambi-Regular.ttf", 100, 0);
+	subtitle = al_load_ttf_font("BalooThambi-Regular.ttf", 60, 0);
+
 
 	Item background;
 	background.bmp = al_load_bitmap("background.bmp");
@@ -66,11 +70,10 @@ void Game::Run()
 	{
 		al_get_keyboard_state(&key_state);
 
-		if ((al_key_down(&key_state, ALLEGRO_KEY_ESCAPE)) || (lives <= 0))
+		if ((al_key_down(&key_state, ALLEGRO_KEY_ESCAPE)))
 		{
 			quit = true;
 		}
-
 
 		al_get_mouse_state(&mouse_state);
 		cross.x = mouse_state.x - cross.size/2;
@@ -84,7 +87,6 @@ void Game::Run()
 			trigger = true;
 
 		}
-
 
 		if ((trigger == true) && (mouse_state.buttons == 1) )
 		{
@@ -160,9 +162,18 @@ void Game::Run()
 
 		// WAVES //
 
-		if (ECount <= 0)
+		if ((ECount <= 0) && (lives != 0))
 		{
 			wave++;
+
+			al_clear_to_color(al_map_rgb(0, 0, 0));
+			al_draw_textf(title, al_map_rgb(255, 255, 255), 320, 20, 0, "WAVE %d", wave);
+			al_flip_display();
+			al_rest(3);
+			ammo = 5;
+			pew.timer = 0;
+
+			
 
 			if (numE <= 90)
 			{
@@ -199,9 +210,18 @@ void Game::Run()
 
 		// Drawing //////////////////////////////////////////////////////////
 		render.Draw(background.bmp, background.x, background.y);
+		al_draw_rectangle(0, 0, 1000, 30, al_map_rgb(0, 0, 0), 35);
 		
+
 		for (int i = 0; i < numE; i++)
-			render.Draw(targets[i].bmp, targets[i].x, targets[i].y);
+			if (!targets[i].visible)
+				render.Draw(targets[i].bmp, targets[i].x, targets[i].y);
+
+		for (int i = 0; i < numE; i++)
+			if (targets[i].visible)
+				render.Draw(targets[i].bmp, targets[i].x, targets[i].y);
+
+
 
 		if (reload.visible)
 			render.Draw(reload.bmp, reload.x, reload.y);
@@ -213,20 +233,59 @@ void Game::Run()
 
 		if (pew.timer != 0)
 		{
-			
 			render.Draw(pew.bmp, pew.x, pew.y);
 			pew.timer--;
 		}
 
+		
 			
 
 		al_draw_textf(font, al_map_rgb(255, 255, 255), 10, 0, 0, "Score: %d", score);
 		al_draw_textf(font, al_map_rgb(255, 255, 255), 10, 20, 0, "Wave: %d", wave);
 
-		al_draw_textf(font, al_map_rgb(255, 255, 255), 848, 0, 0, "             Lives: %d", lives);
+		al_draw_textf(font, al_map_rgb(255, 255, 255), 859, 0, 0, "             Lives: %d", lives);
 		al_draw_textf(font, al_map_rgb(255, 255, 255), 840, 20, 0, "Enemies Left: %d", ECount);
 
 		al_draw_textf(font, al_map_rgb(255, 255, 255), mouse_state.x + 10, mouse_state.y + 10, 0, "%d", ammo);
+
+
+		if (lives == 0)
+		{
+			for (int i = 0; i < numE; i++)
+			{
+				targets[i].speed = 0;
+
+				al_clear_to_color(al_map_rgb(0, 0, 0));
+				al_draw_textf(title, al_map_rgb(255, 255, 255), 230, 100, 0, "GAME OVER");
+				al_draw_textf(subtitle, al_map_rgb(255, 255, 255), 140, 200, 0, "You finished with %d points",score);
+
+
+				al_draw_textf(font, al_map_rgb(255, 255, 255), 380, 300, 0, "Press 'ENTER' to restart!");
+				al_draw_textf(font, al_map_rgb(255, 255, 255), 10, 10, 0, "ESC - Quit");
+
+
+
+				// RESTART //
+				if ((al_key_down(&key_state, ALLEGRO_KEY_ENTER)))
+				{
+					lives = 5;
+					wave = 1;
+					ammo = 5;
+					score = 0;
+					numE = 10; 
+					for (int i = 0; i < numE; i++)
+					{
+						targets[i].bmp = al_load_bitmap("Enemy.bmp");
+						targets[i].x = (i * -100) - 100;
+						targets[i].y = rand() % 20 + 130;
+						targets[i].visible = true;
+						targets[i].phase = 1;
+						targets[i].size = 50;
+						targets[i].speed = rand() % 2 + wave;
+					}
+				}
+			}
+		}
 
 		//////////////////////////////////////////////
 				

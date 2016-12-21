@@ -3,19 +3,10 @@
 class Item
 {
 public:
-	int x;
-	int y;
-	int size;
 	ALLEGRO_BITMAP* bmp;
-
-	int sx;
-	int sy;
-	int speed;
-
-	int timer;
-
-	int phase;
+	int x, y, size, sx, sy, speed, timer, phase;
 	bool visible;
+
 	Item();
 	void Move();
 };
