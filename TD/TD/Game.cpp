@@ -8,7 +8,7 @@ Game::Game()
 	score =  0;
 	numE = ECount = 10;
 	wave = 1;
-	lives = 1;
+	lives = 5;
 	ammo = 5;
 	quit =DisplayReload = false;
 }
@@ -79,8 +79,8 @@ void Game::Run()
 		cross.x = mouse_state.x - cross.size/2;
 		cross.y = mouse_state.y - cross.size/2;
 
-		CrossReload.x = mouse_state.x - CrossReload.size / 2;
-		CrossReload.y = mouse_state.y - CrossReload.size / 2;
+		CrossReload.x = mouse_state.x;
+		CrossReload.y = mouse_state.y;
 
 		if (mouse_state.buttons != 1)
 		{
@@ -173,9 +173,9 @@ void Game::Run()
 			ammo = 5;
 			pew.timer = 0;
 
-			
 
-			if (numE <= 90)
+
+			if (numE <= 100)
 			{
 				numE = wave * 10;
 
@@ -190,6 +190,20 @@ void Game::Run()
 					targets[i].speed = rand() % 2 + wave;
 				}
 			}
+			else if (numE >= 101)
+			{
+				for (int i = 0; i < numE; i++)
+				{
+					targets[i].bmp = al_load_bitmap("Enemy.bmp");
+					targets[i].x = (i * -100) - 100;
+					targets[i].y = rand() % 20 + 130;
+					targets[i].visible = true;
+					targets[i].phase = 1;
+					targets[i].size = 50;
+					targets[i].speed = rand() % 2 + wave;
+				}
+			}
+
 			ECount = numE;
 		}
 
@@ -272,7 +286,8 @@ void Game::Run()
 					wave = 1;
 					ammo = 5;
 					score = 0;
-					numE = 10; 
+					numE = 10;
+					ECount = numE;
 					for (int i = 0; i < numE; i++)
 					{
 						targets[i].bmp = al_load_bitmap("Enemy.bmp");
